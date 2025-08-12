@@ -1,12 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 import Badge from "@/components/atoms/Badge";
 import { format } from "date-fns";
-
+import { companyService } from "@/services/api/companyService";
+import { contactService } from "@/services/api/contactService";
 const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
+  const [company, setCompany] = useState(null);
+  const [companyContacts, setCompanyContacts] = useState([]);
+  const [loadingCompany, setLoadingCompany] = useState(false);
+
   if (!isOpen || !contact) return null;
+
+  useEffect(() => {
+    const loadCompanyData = async () => {
+      if (contact.companyId) {
+        setLoadingCompany(true);
+        try {
+          const companyData = await companyService.getById(contact.companyId);
+          setCompany(companyData);
+          
+          // Load all contacts for this company
+          const allContacts = await contactService.getAll();
+          const relatedContacts = allContacts.filter(c => c.companyId === contact.companyId && c.Id !== contact.Id);
+          setCompanyContacts(relatedContacts);
+        } catch (error) {
+          console.error("Error loading company data:", error);
+        } finally {
+          setLoadingCompany(false);
+        }
+      }
+    };
+
+    loadCompanyData();
+  }, [contact]);
 
   const getBadgeVariant = (status) => {
     switch (status) {
@@ -45,8 +73,8 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
                   {contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
                 </Badge>
               </div>
-              <p className="text-lg text-gray-600">
-                {contact.role} at {contact.company}
+<p className="text-lg text-gray-600">
+                {contact.role} {company ? `at ${company.name}` : contact.company ? `at ${contact.company}` : ''}
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -84,16 +112,9 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
               </div>
             </Card>
 
-            <Card className="p-4">
+<Card className="p-4">
               <h3 className="text-sm font-medium text-gray-500 mb-3">Business Information</h3>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <ApperIcon name="Building2" size={18} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Company</p>
-                    <p className="text-sm font-medium text-gray-900">{contact.company}</p>
-                  </div>
-                </div>
                 <div className="flex items-center space-x-3">
                   <ApperIcon name="Briefcase" size={18} className="text-gray-400" />
                   <div>
@@ -110,7 +131,109 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
                 </div>
               </div>
             </Card>
+
+            {/* Company Information */}
+            {company ? (
+              <Card className="p-4">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
+                {loadingCompany ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <ApperIcon name="Building2" size={18} className="text-gray-400" />
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600">Company</p>
+                        <p className="text-sm font-medium text-gray-900">{company.name}</p>
+                      </div>
+                      <Badge variant={company.status === 'active' ? 'success' : company.status === 'trial' ? 'warning' : 'error'}>
+                        {company.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <ApperIcon name="Globe" size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-sm text-gray-600">Industry</p>
+                        <p className="text-sm font-medium text-gray-900">{company.industry}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <ApperIcon name="Users" size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-sm text-gray-600">Employees</p>
+                        <p className="text-sm font-medium text-gray-900">{company.employees}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <ApperIcon name="TrendingUp" size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-sm text-gray-600">Company MRR</p>
+                        <p className="text-sm font-medium text-gray-900">{formatCurrency(company.mrr)}</p>
+                      </div>
+                    </div>
+                    {company.website && (
+                      <div className="flex items-center space-x-3">
+                        <ApperIcon name="ExternalLink" size={18} className="text-gray-400" />
+                        <div>
+                          <p className="text-sm text-gray-600">Website</p>
+                          <a 
+                            href={company.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-primary hover:text-primary-light transition-colors"
+                          >
+                            {company.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            ) : contact.company && (
+              <Card className="p-4">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
+                <div className="flex items-center space-x-3">
+                  <ApperIcon name="Building2" size={18} className="text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">Company</p>
+                    <p className="text-sm font-medium text-gray-900">{contact.company}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
+
+{/* Other Company Contacts */}
+          {companyContacts.length > 0 && (
+            <Card className="p-4 mb-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">
+                Other Contacts at {company?.name || contact.company}
+              </h3>
+              <div className="space-y-2">
+                {companyContacts.map((companyContact) => (
+                  <div key={companyContact.Id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
+                        {companyContact.firstName[0]}{companyContact.lastName[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {companyContact.firstName} {companyContact.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500">{companyContact.role}</p>
+                      </div>
+                    </div>
+                    <Badge variant={companyContact.status === 'active' ? 'success' : companyContact.status === 'trial' ? 'warning' : 'error'}>
+                      {companyContact.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Notes */}
           {contact.notes && (

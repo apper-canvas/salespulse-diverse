@@ -1,12 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 import Badge from "@/components/atoms/Badge";
 import ApperIcon from "@/components/ApperIcon";
-
+import { contactService } from "@/services/api/contactService";
 const CompanyDetail = ({ company, onEdit, onClose, isOpen }) => {
+const [companyContacts, setCompanyContacts] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+
   if (!isOpen || !company) return null;
 
+  useEffect(() => {
+    const loadCompanyContacts = async () => {
+      setLoadingContacts(true);
+      try {
+        const allContacts = await contactService.getAll();
+        const relatedContacts = allContacts.filter(c => c.companyId === company.Id);
+        setCompanyContacts(relatedContacts);
+      } catch (error) {
+        console.error("Error loading company contacts:", error);
+      } finally {
+        setLoadingContacts(false);
+      }
+    };
+
+    if (company) {
+      loadCompanyContacts();
+    }
+  }, [company]);
   const getStatusColor = (status) => {
     switch (status) {
       case "active":
@@ -154,6 +175,50 @@ const CompanyDetail = ({ company, onEdit, onClose, isOpen }) => {
                 </div>
               </div>
             </div>
+          </div>
+
+{/* Company Contacts */}
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3">
+              Company Contacts ({companyContacts.length})
+            </h3>
+            {loadingContacts ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : companyContacts.length > 0 ? (
+              <div className="space-y-2">
+                {companyContacts.map((contact) => (
+                  <div key={contact.Id} className="flex items-center justify-between py-3 px-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {contact.firstName[0]}{contact.lastName[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {contact.firstName} {contact.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500">{contact.role}</p>
+                        <p className="text-xs text-gray-400">{contact.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={contact.status === 'active' ? 'success' : contact.status === 'trial' ? 'warning' : 'error'}>
+                        {contact.status}
+                      </Badge>
+                      <span className="text-xs text-gray-500">
+                        ${contact.mrr.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <ApperIcon name="Users" size={24} className="text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">No contacts found for this company</p>
+              </div>
+            )}
           </div>
 
           {/* Additional Information */}

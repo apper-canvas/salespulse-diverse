@@ -48,10 +48,10 @@ const Contacts = () => {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(contact =>
+filtered = filtered.filter(contact =>
         `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        contact.company.toLowerCase().includes(searchTerm.toLowerCase())
+        (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
