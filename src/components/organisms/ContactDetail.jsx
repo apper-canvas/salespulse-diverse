@@ -11,9 +11,7 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
   const [companyContacts, setCompanyContacts] = useState([]);
   const [loadingCompany, setLoadingCompany] = useState(false);
 
-  if (!isOpen || !contact) return null;
-
-  useEffect(() => {
+useEffect(() => {
     const loadCompanyData = async () => {
       if (contact.companyId) {
         setLoadingCompany(true);
