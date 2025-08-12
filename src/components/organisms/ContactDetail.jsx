@@ -11,10 +11,7 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
   const [companyContacts, setCompanyContacts] = useState([]);
   const [loadingCompany, setLoadingCompany] = useState(false);
 
-  // Early return if contact is null/undefined
-  if (!contact) {
-    return null;
-  }
+// State and hooks must be called before any conditional returns
 
 useEffect(() => {
     const loadCompanyData = async () => {
@@ -36,8 +33,13 @@ useEffect(() => {
       }
     };
 
-    loadCompanyData();
+loadCompanyData();
   }, [contact]);
+
+  // Early return after all hooks are called
+  if (!contact) {
+    return null;
+  }
 
   const getBadgeVariant = (status) => {
     switch (status) {
