@@ -191,12 +191,12 @@ type: preselectedType || "call",
 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Associated Contact
                 </label>
-                <select
+<select
                   name="contactId"
                   value={formData.contactId}
                   onChange={handleInputChange}
                   disabled={!!preselectedContactId}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!!preselectedContactId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${preselectedContactId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select Contact</option>
                   {contacts.map((contact) => (
@@ -211,12 +211,12 @@ type: preselectedType || "call",
 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Associated Company
                 </label>
-                <select
+<select
                   name="companyId"
                   value={formData.companyId}
                   onChange={handleInputChange}
                   disabled={!!preselectedCompanyId}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!!preselectedCompanyId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${preselectedCompanyId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select Company</option>
                   {companies.map((company) => (
