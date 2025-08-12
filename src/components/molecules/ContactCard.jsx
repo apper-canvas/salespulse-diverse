@@ -4,7 +4,7 @@ import Card from "@/components/atoms/Card";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 
-const ContactCard = ({ contact, onEdit, onDelete, onClick }) => {
+const ContactCard = ({ contact, onEdit, onDelete, onClick, onNewActivity }) => {
   const getBadgeVariant = (status) => {
     switch (status) {
       case "trial":
@@ -65,7 +65,18 @@ const ContactCard = ({ contact, onEdit, onDelete, onClick }) => {
             {formatCurrency(contact.mrr)}
             <span className="text-xs font-normal text-gray-500 ml-1">/mo</span>
           </div>
-          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNewActivity?.(contact);
+              }}
+              title="New Activity"
+            >
+              <ApperIcon name="Plus" size={14} />
+            </Button>
             <Button
               size="sm"
               variant="ghost"

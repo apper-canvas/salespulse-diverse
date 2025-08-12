@@ -6,7 +6,7 @@ import ApperIcon from "@/components/ApperIcon";
 import { activitiesService } from "@/services/api/activitiesService";
 import { format } from "date-fns";
 
-const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCancel, isOpen, preselectedType }) => {
+const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCancel, isOpen, preselectedType, preselectedContactId, preselectedCompanyId }) => {
   const [formData, setFormData] = useState({
     type: "call",
     title: "",
@@ -37,15 +37,15 @@ const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCance
         isTask: activity.isTask || false,
         completed: activity.completed || false
       });
-    } else {
+} else {
       // Reset form for new activity
       const now = new Date().toISOString().slice(0, 16);
       setFormData({
 type: preselectedType || "call",
         title: "",
         description: "",
-        contactId: "",
-        companyId: "",
+        contactId: preselectedContactId || "",
+        companyId: preselectedCompanyId || "",
         timestamp: now,
         dueDate: "",
         priority: "medium",
@@ -54,7 +54,7 @@ type: preselectedType || "call",
         completed: false
       });
     }
-}, [activity, isOpen, preselectedType]);
+}, [activity, isOpen, preselectedType, preselectedContactId, preselectedCompanyId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,14 +188,15 @@ type: preselectedType || "call",
             {/* Contact and Company */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+<label className="block text-sm font-medium text-gray-700 mb-2">
                   Associated Contact
                 </label>
                 <select
                   name="contactId"
                   value={formData.contactId}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={!!preselectedContactId}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!!preselectedContactId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select Contact</option>
                   {contacts.map((contact) => (
@@ -207,14 +208,15 @@ type: preselectedType || "call",
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+<label className="block text-sm font-medium text-gray-700 mb-2">
                   Associated Company
                 </label>
                 <select
                   name="companyId"
                   value={formData.companyId}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={!!preselectedCompanyId}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${!!preselectedCompanyId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Select Company</option>
                   {companies.map((company) => (
