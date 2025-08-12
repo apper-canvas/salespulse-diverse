@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import Button from '@/components/atoms/Button';
-import Card from '@/components/atoms/Card';
-import Badge from '@/components/atoms/Badge';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import Empty from '@/components/ui/Empty';
-import ApperIcon from '@/components/ApperIcon';
-import DealForm from '@/components/organisms/DealForm';
-import { toast } from 'react-toastify';
-import { dealService } from '@/services/api/dealService';
-import { companyService } from '@/services/api/companyService';
-
+import React, { useEffect, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import DealCard from "@/components/molecules/DealCard";
+import DealDetail from "@/components/organisms/DealDetail";
+import { toast } from "react-toastify";
+import { dealService } from "@/services/api/dealService";
+import { companyService } from "@/services/api/companyService";
+import ApperIcon from "@/components/ApperIcon";
+import DealForm from "@/components/organisms/DealForm";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import Card from "@/components/atoms/Card";
 const Pipeline = () => {
-  const [deals, setDeals] = useState([]);
+const [deals, setDeals] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
-
+  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [showDealDetail, setShowDealDetail] = useState(false);
   const stages = [
     { id: 'lead', name: 'Lead', color: 'bg-gray-100', borderColor: 'border-gray-300' },
     { id: 'demo', name: 'Demo Scheduled', color: 'bg-blue-50', borderColor: 'border-blue-200' },
@@ -68,8 +70,7 @@ const Pipeline = () => {
       toast.error('Failed to move deal');
     }
   };
-
-  const handleAddDeal = () => {
+const handleAddDeal = () => {
     setShowForm(true);
   };
 
@@ -86,6 +87,23 @@ const Pipeline = () => {
 
   const handleCloseForm = () => {
     setShowForm(false);
+  };
+
+  const handleDealClick = (deal) => {
+    setSelectedDeal(deal);
+    setShowDealDetail(true);
+  };
+
+  const handleCloseDealDetail = () => {
+    setSelectedDeal(null);
+    setShowDealDetail(false);
+  };
+
+  const handleEditDeal = (deal) => {
+    // Close detail modal and open edit form
+    setShowDealDetail(false);
+    // Future: implement edit functionality
+    toast.info('Edit functionality coming soon');
   };
 
   const getDealsByStage = (stageId) => {
@@ -184,16 +202,15 @@ const Pipeline = () => {
                             index={index}
                           >
                             {(provided, snapshot) => (
-                              <Card
-                                ref={provided.innerRef}
+<Card 
                                 {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`p-4 cursor-move transition-all ${
-                                  snapshot.isDragging 
-                                    ? 'shadow-lg rotate-2 bg-white' 
-                                    : 'hover:shadow-md'
+                                ref={provided.innerRef}
+                                className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                                  snapshot.isDragging ? 'shadow-lg rotate-2' : ''
                                 }`}
+                                onClick={() => handleDealClick(deal)}
                               >
+                                <div {...provided.dragHandleProps}>
                                 <div className="flex items-start justify-between mb-2">
                                   <h4 className="font-medium text-gray-900 text-sm">
                                     {getCompanyName(deal.companyId)}
@@ -249,11 +266,19 @@ const Pipeline = () => {
         </div>
       </DragDropContext>
 
-      {showForm && (
+{showForm && (
         <DealForm
           companies={companies}
           onSave={handleSaveDeal}
           onClose={handleCloseForm}
+        />
+      )}
+
+      {showDealDetail && selectedDeal && (
+        <DealDetail
+          deal={selectedDeal}
+          onClose={handleCloseDealDetail}
+          onEdit={handleEditDeal}
         />
       )}
     </div>
