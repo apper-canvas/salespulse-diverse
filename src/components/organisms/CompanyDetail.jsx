@@ -28,7 +28,7 @@ useEffect(() => {
       loadCompanyContacts();
     }
   }, [company]);
-  const getStatusColor = (status) => {
+const getStatusColor = (status) => {
     switch (status) {
       case "active":
         return "success";
@@ -36,6 +36,8 @@ useEffect(() => {
         return "warning";
       case "churned":
         return "error";
+      case "renewal-due":
+        return "warning";
       default:
         return "default";
     }
@@ -137,11 +139,19 @@ const formatEmployees = (count) => {
                                     {company?.status || "Unknown"}
                                 </Badge>
                             </div>
-                        </div>
+</div>
                         <div>
                             <span className="text-sm font-medium text-gray-500">Monthly Revenue</span>
                             <p className="text-gray-900 font-semibold">{formatMRR(company?.mrr || 0)}</p>
                         </div>
+                        {company?.renewalDate && (
+                        <div>
+                            <span className="text-sm font-medium text-gray-500">Renewal Date</span>
+                            <p className="text-gray-900">
+                                {new Date(company.renewalDate).toLocaleDateString()}
+                            </p>
+                        </div>
+                        )}
                         <div>
                             <span className="text-sm font-medium text-gray-500">Created</span>
                             <p className="text-gray-900">

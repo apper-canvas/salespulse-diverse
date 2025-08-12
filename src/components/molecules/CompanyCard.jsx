@@ -5,7 +5,7 @@ import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 
 const CompanyCard = ({ company, onEdit, onDelete, onClick }) => {
-  const getStatusColor = (status) => {
+const getStatusColor = (status) => {
     switch (status) {
       case "active":
         return "success";
@@ -13,6 +13,8 @@ const CompanyCard = ({ company, onEdit, onDelete, onClick }) => {
         return "warning";
       case "churned":
         return "error";
+      case "renewal-due":
+        return "renewal-due";
       default:
         return "default";
     }
@@ -110,8 +112,8 @@ const CompanyCard = ({ company, onEdit, onDelete, onClick }) => {
 
         {/* Status and Plan */}
         <div className="flex items-center justify-between">
-          <Badge variant={getStatusColor(company.status)}>
-            {company.status}
+<Badge variant={getStatusColor(company.status)}>
+            {company.status === "renewal-due" ? "Renewal Due" : company.status.charAt(0).toUpperCase() + company.status.slice(1)}
           </Badge>
           
           {company.subscriptionPlan && (

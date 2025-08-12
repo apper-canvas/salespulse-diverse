@@ -17,8 +17,9 @@
     "employees": 120,
     "website": "https://healthcareinnovations.com",
     "subscriptionPlan": "Professional",
-    "status": "active",
+    "status": "renewal-due",
     "mrr": 2800,
+    "renewalDate": "2024-04-15T00:00:00Z",
     "createdAt": "2024-02-03T14:20:00Z"
   },
   {
@@ -50,8 +51,9 @@
     "employees": 180,
     "website": "https://financialadvisorsplus.com",
     "subscriptionPlan": "Enterprise",
-    "status": "active",
+    "status": "renewal-due",
     "mrr": 3200,
+    "renewalDate": "2024-04-10T00:00:00Z",
     "createdAt": "2024-01-10T09:00:00Z"
   },
   {

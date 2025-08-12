@@ -15,7 +15,9 @@ colors: {
         success: '#00D4AA',
         warning: '#FFB547',
         error: '#FF5A5F',
-        info: '#47B5FF'
+        info: '#47B5FF',
+        renewal: '#F59E0B',
+        'renewal-light': '#FCD34D'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

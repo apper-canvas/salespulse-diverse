@@ -50,7 +50,20 @@
     background: linear-gradient(135deg, #47B5FF 0%, #3182CE 100%) !important;
   }
 
+  .Toastify__toast--warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+  }
+
   .Toastify__progress-bar {
     background: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  /* Renewal Due specific styles */
+  .renewal-due-indicator {
+    @apply animate-pulse;
+  }
+
+  .renewal-badge {
+    @apply bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-200;
   }
 }

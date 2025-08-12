@@ -5,7 +5,7 @@ import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 
 const ContactCard = ({ contact, onEdit, onDelete, onClick, onNewActivity }) => {
-  const getBadgeVariant = (status) => {
+const getBadgeVariant = (status) => {
     switch (status) {
       case "trial":
         return "trial";
@@ -13,6 +13,8 @@ const ContactCard = ({ contact, onEdit, onDelete, onClick, onNewActivity }) => {
         return "active";
       case "churned":
         return "churned";
+      case "renewal-due":
+        return "renewal-due";
       default:
         return "default";
     }
@@ -39,8 +41,8 @@ const ContactCard = ({ contact, onEdit, onDelete, onClick, onNewActivity }) => {
             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors">
               {contact.firstName} {contact.lastName}
             </h3>
-            <Badge variant={getBadgeVariant(contact.status)}>
-              {contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
+<Badge variant={getBadgeVariant(contact.status)}>
+              {contact.status === "renewal-due" ? "Renewal Due" : contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
             </Badge>
           </div>
           <div className="space-y-1">

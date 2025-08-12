@@ -64,7 +64,7 @@ loadContactData();
     return null;
   }
 
-  const getBadgeVariant = (status) => {
+const getBadgeVariant = (status) => {
     switch (status) {
       case "trial":
         return "trial";
@@ -72,6 +72,8 @@ loadContactData();
         return "active";
       case "churned":
         return "churned";
+      case "renewal-due":
+        return "renewal-due";
       default:
         return "default";
     }
@@ -192,8 +194,8 @@ loadContactData();
                                 <p className="text-sm font-medium text-gray-900">{company.name}</p>
                             </div>
                             <Badge
-                                variant={company.status === "active" ? "success" : company.status === "trial" ? "warning" : "error"}>
-                                {company.status}
+variant={getBadgeVariant(company.status)}>
+                                {company.status === "renewal-due" ? "Renewal Due" : company.status.charAt(0).toUpperCase() + company.status.slice(1)}
                             </Badge>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -212,10 +214,16 @@ loadContactData();
                         </div>
                         <div className="flex items-center space-x-3">
                             <ApperIcon name="TrendingUp" size={18} className="text-gray-400" />
-                            <div>
+<div>
                                 <p className="text-sm text-gray-600">Company MRR</p>
                                 <p className="text-sm font-medium text-gray-900">{formatCurrency(company.mrr)}</p>
                             </div>
+                            {company.renewalDate && (
+                            <div>
+                                <p className="text-sm text-gray-600">Renewal Date</p>
+                                <p className="text-sm font-medium text-gray-900">{new Date(company.renewalDate).toLocaleDateString()}</p>
+                            </div>
+                            )}
                         </div>
                         {company.website && <div className="flex items-center space-x-3">
                             <ApperIcon name="ExternalLink" size={18} className="text-gray-400" />

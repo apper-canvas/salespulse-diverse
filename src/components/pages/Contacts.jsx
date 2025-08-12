@@ -56,7 +56,7 @@ filtered = filtered.filter(contact =>
     }
 
     // Filter by status
-    if (statusFilter !== "all") {
+if (statusFilter !== "all") {
       filtered = filtered.filter(contact => contact.status === statusFilter);
     }
 
@@ -114,7 +114,7 @@ filtered = filtered.filter(contact =>
     setSelectedContact(null);
   };
 
-  const getStatusCount = (status) => {
+const getStatusCount = (status) => {
     return contacts.filter(contact => contact.status === status).length;
   };
 
@@ -209,7 +209,7 @@ filtered = filtered.filter(contact =>
             >
               Trial ({getStatusCount("trial")})
             </button>
-            <button
+<button
               onClick={() => setStatusFilter("churned")}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 statusFilter === "churned"
@@ -218,6 +218,16 @@ filtered = filtered.filter(contact =>
               }`}
             >
               Churned ({getStatusCount("churned")})
+            </button>
+            <button
+              onClick={() => setStatusFilter("renewal-due")}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === "renewal-due"
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Renewal Due ({getStatusCount("renewal-due")})
             </button>
           </div>
         </div>

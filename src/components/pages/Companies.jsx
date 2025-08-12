@@ -57,7 +57,7 @@ const Companies = () => {
     }
 
     // Filter by status
-    if (statusFilter !== "all") {
+if (statusFilter !== "all") {
       filtered = filtered.filter(company => company.status === statusFilter);
     }
 
@@ -120,7 +120,7 @@ const Companies = () => {
     setSelectedCompany(null);
   };
 
-  const getStatusCount = (status) => {
+const getStatusCount = (status) => {
     return companies.filter(company => company.status === status).length;
   };
 
@@ -219,7 +219,7 @@ const Companies = () => {
             >
               Trial ({getStatusCount("trial")})
             </button>
-            <button
+<button
               onClick={() => setStatusFilter("churned")}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 statusFilter === "churned"
@@ -228,6 +228,16 @@ const Companies = () => {
               }`}
             >
               Churned ({getStatusCount("churned")})
+            </button>
+            <button
+              onClick={() => setStatusFilter("renewal-due")}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === "renewal-due"
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Renewal Due ({getStatusCount("renewal-due")})
             </button>
           </div>
 
