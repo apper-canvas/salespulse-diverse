@@ -1,39 +1,62 @@
-import React, { useState, useEffect } from "react";
-import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
-import Badge from "@/components/atoms/Badge";
+import React, { useEffect, useState } from "react";
+import ActivityForm from "@/components/organisms/ActivityForm";
 import { format } from "date-fns";
 import { companyService } from "@/services/api/companyService";
 import { contactService } from "@/services/api/contactService";
+import { activitiesService } from "@/services/api/activitiesService";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import Card from "@/components/atoms/Card";
+import Contacts from "@/components/pages/Contacts";
 const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
-  const [company, setCompany] = useState(null);
+const [company, setCompany] = useState(null);
   const [companyContacts, setCompanyContacts] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loadingCompany, setLoadingCompany] = useState(false);
-
+  const [loadingActivities, setLoadingActivities] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [activityType, setActivityType] = useState("call");
 // State and hooks must be called before any conditional returns
-
 useEffect(() => {
-    const loadCompanyData = async () => {
-      if (contact?.companyId) {
-        setLoadingCompany(true);
+    const loadContactData = async () => {
+      if (contact) {
+        // Load company data
+        if (contact.companyId) {
+          setLoadingCompany(true);
+          try {
+            const companyData = await companyService.getById(contact.companyId);
+            setCompany(companyData);
+            
+            // Load all contacts for this company
+            const allContacts = await contactService.getAll();
+            const relatedContacts = allContacts.filter(c => c.companyId === contact.companyId && c.Id !== contact.Id);
+            setCompanyContacts(relatedContacts);
+          } catch (error) {
+            console.error("Error loading company data:", error);
+          } finally {
+            setLoadingCompany(false);
+          }
+        }
+
+        // Load activities for this contact
+        setLoadingActivities(true);
         try {
-          const companyData = await companyService.getById(contact.companyId);
-          setCompany(companyData);
-          
-          // Load all contacts for this company
-          const allContacts = await contactService.getAll();
-          const relatedContacts = allContacts.filter(c => c.companyId === contact.companyId && c.Id !== contact.Id);
-          setCompanyContacts(relatedContacts);
+          const allActivities = await activitiesService.getAll();
+          const contactActivities = allActivities.filter(a => 
+            parseInt(a.contactId) === contact.Id
+          ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setActivities(contactActivities);
         } catch (error) {
-          console.error("Error loading company data:", error);
+          console.error("Error loading activities:", error);
         } finally {
-          setLoadingCompany(false);
+          setLoadingActivities(false);
         }
       }
     };
 
-loadCompanyData();
+loadContactData();
   }, [contact]);
 
   // Early return after all hooks are called
@@ -64,216 +87,297 @@ loadCompanyData();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-<div className="flex items-center space-x-3 mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {contact?.firstName || 'Unknown'} {contact?.lastName || 'Contact'}
-                </h2>
-                <Badge variant={getBadgeVariant(contact?.status || 'active')}>
-                  {(contact?.status || 'active').charAt(0).toUpperCase() + (contact?.status || 'active').slice(1)}
-                </Badge>
-              </div>
-<p className="text-lg text-gray-600">
-                {contact?.role || 'No role specified'} {company ? `at ${company.name}` : contact?.company ? `at ${contact.company}` : ''}
-              </p>
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            {contact?.firstName || "Unknown"} {contact?.lastName || "Contact"}
+                        </h2>
+                        <Badge variant={getBadgeVariant(contact?.status || "active")}>
+                            {(contact?.status || "active").charAt(0).toUpperCase() + (contact?.status || "active").slice(1)}
+                        </Badge>
+                    </div>
+                    <p className="text-lg text-gray-600">
+                        {contact?.role || "No role specified"} {company ? `at ${company.name}` : contact?.company ? `at ${contact.company}` : ""}
+                    </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 mr-4">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuickActivity("call")}
+                            className="text-info border-info/20 hover:bg-info/5">
+                            <ApperIcon name="Phone" size={14} className="mr-1" />Log Call
+                                            </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuickActivity("email")}
+                            className="text-accent border-accent/20 hover:bg-accent/5">
+                            <ApperIcon name="Mail" size={14} className="mr-1" />Log Email
+                                            </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuickActivity("meeting")}
+                            className="text-primary border-primary/20 hover:bg-primary/5">
+                            <ApperIcon name="Calendar" size={14} className="mr-1" />Schedule Meeting
+                                            </Button>
+                    </div>
+                    <Button variant="accent" onClick={() => onEdit(contact)}>
+                        <ApperIcon name="Edit2" size={16} className="mr-2" />Edit
+                                      </Button>
+                    <Button variant="ghost" size="sm" onClick={onClose}>
+                        <ApperIcon name="X" size={18} />
+                    </Button>
+                </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="accent" onClick={() => onEdit(contact)}>
-                <ApperIcon name="Edit2" size={16} className="mr-2" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <ApperIcon name="X" size={18} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Card className="p-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">Contact Information</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <ApperIcon name="Mail" size={18} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="text-sm font-medium text-gray-900">{contact.email}</p>
-                  </div>
-                </div>
-                {contact.phone && (
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="Phone" size={18} className="text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-600">Phone</p>
-                      <p className="text-sm font-medium text-gray-900">{contact.phone}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-<Card className="p-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">Business Information</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <ApperIcon name="Briefcase" size={18} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Role</p>
-                    <p className="text-sm font-medium text-gray-900">{contact.role}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <ApperIcon name="DollarSign" size={18} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Monthly Revenue</p>
-                    <p className="text-sm font-medium text-gray-900">{formatCurrency(contact.mrr)}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Company Information */}
-            {company ? (
-              <Card className="p-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
-                {loadingCompany ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <ApperIcon name="Building2" size={18} className="text-gray-400" />
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-600">Company</p>
-                        <p className="text-sm font-medium text-gray-900">{company.name}</p>
-                      </div>
-                      <Badge variant={company.status === 'active' ? 'success' : company.status === 'trial' ? 'warning' : 'error'}>
-                        {company.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <ApperIcon name="Globe" size={18} className="text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Industry</p>
-                        <p className="text-sm font-medium text-gray-900">{company.industry}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <ApperIcon name="Users" size={18} className="text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Employees</p>
-                        <p className="text-sm font-medium text-gray-900">{company.employees}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <ApperIcon name="TrendingUp" size={18} className="text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-600">Company MRR</p>
-                        <p className="text-sm font-medium text-gray-900">{formatCurrency(company.mrr)}</p>
-                      </div>
-                    </div>
-                    {company.website && (
-                      <div className="flex items-center space-x-3">
-                        <ApperIcon name="ExternalLink" size={18} className="text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-600">Website</p>
-                          <a 
-                            href={company.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm font-medium text-primary hover:text-primary-light transition-colors"
-                          >
-                            {company.website.replace(/^https?:\/\//, '')}
-                          </a>
+            {/* Contact Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Card className="p-4">
+                    <h3 className="text-sm font-medium text-gray-500 mb-3">Contact Information</h3>
+                    <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="Mail" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Email</p>
+                                <p className="text-sm font-medium text-gray-900">{contact.email}</p>
+                            </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Card>
-            ) : contact.company && (
-              <Card className="p-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
-                <div className="flex items-center space-x-3">
-                  <ApperIcon name="Building2" size={18} className="text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Company</p>
-                    <p className="text-sm font-medium text-gray-900">{contact.company}</p>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-
-{/* Other Company Contacts */}
-          {companyContacts.length > 0 && (
-            <Card className="p-4 mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                Other Contacts at {company?.name || contact.company}
-              </h3>
-              <div className="space-y-2">
-                {companyContacts.map((companyContact) => (
-                  <div key={companyContact.Id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
-                        {companyContact.firstName[0]}{companyContact.lastName[0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {companyContact.firstName} {companyContact.lastName}
-                        </p>
-                        <p className="text-xs text-gray-500">{companyContact.role}</p>
-                      </div>
+                        {contact.phone && <div className="flex items-center space-x-3">
+                            <ApperIcon name="Phone" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Phone</p>
+                                <p className="text-sm font-medium text-gray-900">{contact.phone}</p>
+                            </div>
+                        </div>}
                     </div>
-                    <Badge variant={companyContact.status === 'active' ? 'success' : companyContact.status === 'trial' ? 'warning' : 'error'}>
-                      {companyContact.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Notes */}
-          {contact.notes && (
-            <Card className="p-4 mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">Notes</h3>
-              <p className="text-sm text-gray-700">{contact.notes}</p>
-            </Card>
-          )}
-
-          {/* Activity History */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-500">Activity History</h3>
-              <Button variant="ghost" size="sm">
-                <ApperIcon name="Plus" size={16} className="mr-2" />
-                Add Activity
-              </Button>
+                </Card>
+                <Card className="p-4">
+                    <h3 className="text-sm font-medium text-gray-500 mb-3">Business Information</h3>
+                    <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="Briefcase" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Role</p>
+                                <p className="text-sm font-medium text-gray-900">{contact.role}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="DollarSign" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Monthly Revenue</p>
+                                <p className="text-sm font-medium text-gray-900">{formatCurrency(contact.mrr)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+                {/* Company Information */}
+                {company ? <Card className="p-4">
+                    <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
+                    {loadingCompany ? <div className="flex items-center justify-center py-4">
+                        <div
+                            className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div> : <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="Building2" size={18} className="text-gray-400" />
+                            <div className="flex-1">
+                                <p className="text-sm text-gray-600">Company</p>
+                                <p className="text-sm font-medium text-gray-900">{company.name}</p>
+                            </div>
+                            <Badge
+                                variant={company.status === "active" ? "success" : company.status === "trial" ? "warning" : "error"}>
+                                {company.status}
+                            </Badge>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="Globe" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Industry</p>
+                                <p className="text-sm font-medium text-gray-900">{company.industry}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="Users" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Employees</p>
+                                <p className="text-sm font-medium text-gray-900">{company.employees}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <ApperIcon name="TrendingUp" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Company MRR</p>
+                                <p className="text-sm font-medium text-gray-900">{formatCurrency(company.mrr)}</p>
+                            </div>
+                        </div>
+                        {company.website && <div className="flex items-center space-x-3">
+                            <ApperIcon name="ExternalLink" size={18} className="text-gray-400" />
+                            <div>
+                                <p className="text-sm text-gray-600">Website</p>
+                                <a
+                                    href={company.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-medium text-primary hover:text-primary-light transition-colors">
+                                    {company.website.replace(/^https?:\/\//, "")}
+                                </a>
+                            </div>
+                        </div>}
+                    </div>}
+                </Card> : contact.company && <Card className="p-4">
+                    <h3 className="text-sm font-medium text-gray-500 mb-3">Company Information</h3>
+                    <div className="flex items-center space-x-3">
+                        <ApperIcon name="Building2" size={18} className="text-gray-400" />
+                        <div>
+                            <p className="text-sm text-gray-600">Company</p>
+                            <p className="text-sm font-medium text-gray-900">{contact.company}</p>
+                        </div>
+                    </div>
+                </Card>}
             </div>
-            
-            <div className="text-center py-8">
-              <ApperIcon name="Activity" size={48} className="text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500 mb-2">No activities yet</p>
-              <p className="text-xs text-gray-400">Activities with this contact will appear here</p>
+            {/* Other Company Contacts */}
+            {companyContacts.length > 0 && <Card className="p-4 mb-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Other Contacts at {company?.name || contact.company}
+                </h3>
+                <div className="space-y-2">
+                    {companyContacts.map(companyContact => <div
+                        key={companyContact.Id}
+                        className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                            <div
+                                className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                {companyContact.firstName[0]}{companyContact.lastName[0]}
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {companyContact.firstName} {companyContact.lastName}
+                                </p>
+                                <p className="text-xs text-gray-500">{companyContact.role}</p>
+                            </div>
+                        </div>
+                        <Badge
+                            variant={companyContact.status === "active" ? "success" : companyContact.status === "trial" ? "warning" : "error"}>
+                            {companyContact.status}
+                        </Badge>
+                    </div>)}
+                </div>
+            </Card>}
+            {/* Notes */}
+            {contact.notes && <Card className="p-4 mb-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Notes</h3>
+                <p className="text-sm text-gray-700">{contact.notes}</p>
+            </Card>}
+            {/* Activity History */}
+            <Card className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-gray-500">Activity History</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowActivityForm(true)}>
+                        <ApperIcon name="Plus" size={16} className="mr-2" />Add Activity
+                                      </Button>
+                </div>
+                {loadingActivities ? <div className="flex items-center justify-center py-8">
+                    <ApperIcon name="Loader" size={24} className="text-primary animate-spin" />
+                </div> : activities.length > 0 ? <div className="space-y-3">
+                    {activities.map(activity => <div
+                        key={activity.Id}
+                        className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div
+                            className="h-8 w-8 bg-gradient-to-br from-primary/20 to-primary-light/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <ApperIcon
+                                name={activity.type === "email" ? "Mail" : activity.type === "meeting" ? "Calendar" : activity.type === "demo" ? "Monitor" : activity.type === "task" ? "CheckSquare" : "Phone"}
+                                size={14}
+                                className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {activity.title || activity.description}
+                                    </p>
+                                    {activity.title && activity.description && <p className="text-xs text-gray-600 mt-1">{activity.description}</p>}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {format(new Date(activity.timestamp), "MMM d, yyyy 'at' h:mm a")}
+                                    </p>
+                                    {activity.outcome && <p className="text-xs text-gray-600 mt-2 p-2 bg-gray-100 rounded">
+                                        <strong>Outcome:</strong> {activity.outcome}
+                                    </p>}
+                                </div>
+                                <div className="flex items-center space-x-1 ml-2">
+                                    <Badge
+                                        variant={activity.type === "email" ? "accent" : activity.type === "meeting" ? "primary" : activity.type === "demo" ? "warning" : activity.type === "task" ? "success" : "info"}
+                                        size="sm">
+                                        {activity.type}
+                                    </Badge>
+                                    {activity.isTask && activity.completed && <Badge variant="success" size="sm">completed</Badge>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>)}
+                </div> : <div className="text-center py-8">
+                    <ApperIcon name="Activity" size={48} className="text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500 mb-2">No activities yet</p>
+                    <p className="text-xs text-gray-400">Activities with this contact will appear here</p>
+                </div>}
+            </Card>
+            {/* Footer */}
+            <div
+                className="flex items-center justify-between pt-4 mt-6 border-t border-gray-100 text-xs text-gray-500">
+                <span>Contact ID: {contact.Id}</span>
+                <span>Created: {format(new Date(contact.createdAt), "MMM dd, yyyy")}</span>
             </div>
-          </Card>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-100 text-xs text-gray-500">
-            <span>Contact ID: {contact.Id}</span>
-            <span>Created: {format(new Date(contact.createdAt), "MMM dd, yyyy")}</span>
-          </div>
         </div>
-      </Card>
-    </div>
+    </Card>
+    {/* Activity Form Modal */}
+    <ActivityForm
+        activity={null}
+        contacts={[contact]}
+        companies={company ? [company] : []}
+        onSave={handleSaveActivity}
+        onCancel={handleCloseActivityForm}
+        isOpen={showActivityForm}
+        preselectedContact={contact.Id}
+        preselectedType={activityType} />
+</div>
   );
+
+  // Helper functions
+  function handleQuickActivity(type) {
+    setActivityType(type);
+    setShowActivityForm(true);
+  }
+
+  function handleSaveActivity() {
+    // Reload activities after saving
+    loadContactData();
+    setShowActivityForm(false);
+    toast.success("Activity logged successfully");
+  }
+
+  function handleCloseActivityForm() {
+    setShowActivityForm(false);
+  }
+
+  // Reload contact data when needed
+  async function loadContactData() {
+    if (contact) {
+      try {
+        const allActivities = await activitiesService.getAll();
+        const contactActivities = allActivities.filter(a => 
+          parseInt(a.contactId) === contact.Id
+        ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setActivities(contactActivities);
+      } catch (error) {
+        console.error("Error reloading activities:", error);
+      }
+    }
+  }
 };
 
 export default ContactDetail;

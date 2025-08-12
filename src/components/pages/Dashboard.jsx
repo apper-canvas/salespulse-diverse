@@ -121,13 +121,16 @@ const Dashboard = () => {
         </Card>
 
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+<div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
             <ApperIcon name="Zap" size={20} className="text-primary" />
           </div>
           
           <div className="space-y-3">
-            <button className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group">
+            <a 
+              href="/contacts" 
+              className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group block"
+            >
               <div className="flex items-center space-x-3">
                 <div className="h-8 w-8 bg-gradient-to-br from-accent/20 to-emerald-400/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                   <ApperIcon name="UserPlus" size={16} className="text-accent" />
@@ -137,21 +140,27 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-500">Create a new contact record</p>
                 </div>
               </div>
-            </button>
+            </a>
             
-            <button className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group">
+            <a 
+              href="/activities"
+              className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group block"
+            >
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 bg-gradient-to-br from-info/20 to-blue-400/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ApperIcon name="BarChart3" size={16} className="text-info" />
+                <div className="h-8 w-8 bg-gradient-to-br from-primary/20 to-primary-light/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ApperIcon name="Activity" size={16} className="text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">View Reports</p>
-                  <p className="text-xs text-gray-500">Analyze your sales performance</p>
+                  <p className="text-sm font-medium text-gray-900">Log Activity</p>
+                  <p className="text-xs text-gray-500">Track calls, emails, and meetings</p>
                 </div>
               </div>
-            </button>
+            </a>
             
-            <button className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group">
+            <a 
+              href="/pipeline"
+              className="w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all duration-200 group block"
+            >
               <div className="flex items-center space-x-3">
                 <div className="h-8 w-8 bg-gradient-to-br from-warning/20 to-orange-400/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                   <ApperIcon name="Target" size={16} className="text-warning" />
@@ -161,7 +170,7 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-500">Track deals and opportunities</p>
                 </div>
               </div>
-            </button>
+            </a>
           </div>
         </Card>
       </div>

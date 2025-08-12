@@ -17,13 +17,42 @@ export const activitiesService = {
     return { ...activity };
   },
 
+  async getByContact(contactId) {
+    await delay(150);
+    return activitiesData.filter(a => parseInt(a.contactId) === parseInt(contactId));
+  },
+
+  async getByCompany(companyId) {
+    await delay(150);
+    return activitiesData.filter(a => parseInt(a.companyId) === parseInt(companyId));
+  },
+
+  async getTasks() {
+    await delay(150);
+    return activitiesData.filter(a => a.isTask);
+  },
+
+  async getOverdueTasks() {
+    await delay(150);
+    const now = new Date();
+    return activitiesData.filter(a => 
+      a.isTask && 
+      a.dueDate && 
+      new Date(a.dueDate) < now && 
+      !a.completed
+    );
+  },
+
   async create(activityData) {
     await delay(300);
-    const newId = Math.max(...activitiesData.map(a => a.Id)) + 1;
+    const newId = Math.max(...activitiesData.map(a => a.Id), 0) + 1;
     const newActivity = {
       ...activityData,
       Id: newId,
-      timestamp: new Date().toISOString()
+      timestamp: activityData.timestamp || new Date().toISOString(),
+      isTask: activityData.isTask || false,
+      completed: activityData.completed || false,
+      priority: activityData.priority || "medium"
     };
     activitiesData.unshift(newActivity);
     return { ...newActivity };
@@ -42,8 +71,29 @@ export const activitiesService = {
       Id: parseInt(id)
     };
     
+    // Handle task completion
+    if (updatedActivity.completed && !activitiesData[index].completed) {
+      updatedActivity.completedAt = new Date().toISOString();
+    } else if (!updatedActivity.completed && activitiesData[index].completed) {
+      updatedActivity.completedAt = null;
+    }
+    
     activitiesData[index] = updatedActivity;
     return { ...updatedActivity };
+  },
+
+  async markComplete(id) {
+    return this.update(id, { 
+      completed: true, 
+      completedAt: new Date().toISOString() 
+    });
+  },
+
+  async markIncomplete(id) {
+    return this.update(id, { 
+      completed: false, 
+      completedAt: null 
+    });
   },
 
   async delete(id) {
