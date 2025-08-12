@@ -1,0 +1,122 @@
+[
+  {
+    "Id": 1,
+    "companyId": 1,
+    "contactPerson": "Sarah Johnson",
+    "value": 85000,
+    "probability": 75,
+    "stage": "negotiation",
+    "expectedCloseDate": "2024-04-15",
+    "notes": "Large enterprise deal with strong interest. Waiting on final budget approval.",
+    "createdAt": "2024-03-01T09:00:00Z",
+    "updatedAt": "2024-03-20T14:30:00Z"
+  },
+  {
+    "Id": 2,
+    "companyId": 2,
+    "contactPerson": "Michael Chen",
+    "value": 42000,
+    "probability": 90,
+    "stage": "trial",
+    "expectedCloseDate": "2024-04-08",
+    "notes": "Demo went very well. Currently in trial phase with positive feedback.",
+    "createdAt": "2024-02-15T11:20:00Z",
+    "updatedAt": "2024-03-18T16:45:00Z"
+  },
+  {
+    "Id": 3,
+    "companyId": 3,
+    "contactPerson": "Emily Rodriguez",
+    "value": 28500,
+    "probability": 45,
+    "stage": "demo",
+    "expectedCloseDate": "2024-04-22",
+    "notes": "Scheduled product demo for next week. Key stakeholders will attend.",
+    "createdAt": "2024-03-10T13:15:00Z",
+    "updatedAt": "2024-03-22T10:20:00Z"
+  },
+  {
+    "Id": 4,
+    "companyId": 4,
+    "contactPerson": "David Thompson",
+    "value": 15600,
+    "probability": 25,
+    "stage": "lead",
+    "expectedCloseDate": "2024-05-01",
+    "notes": "Initial contact made. Need to qualify further and understand requirements.",
+    "createdAt": "2024-03-22T08:30:00Z",
+    "updatedAt": "2024-03-22T08:30:00Z"
+  },
+  {
+    "Id": 5,
+    "companyId": 5,
+    "contactPerson": "Lisa Wang",
+    "value": 95000,
+    "probability": 85,
+    "stage": "negotiation",
+    "expectedCloseDate": "2024-04-10",
+    "notes": "Contract terms being finalized. Very likely to close this month.",
+    "createdAt": "2024-02-28T15:45:00Z",
+    "updatedAt": "2024-03-21T12:00:00Z"
+  },
+  {
+    "Id": 6,
+    "companyId": 7,
+    "contactPerson": "Robert Kim",
+    "value": 125000,
+    "probability": 95,
+    "stage": "closed",
+    "expectedCloseDate": "2024-03-25",
+    "notes": "Successfully closed! Large manufacturing deal with expansion potential.",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-03-25T17:30:00Z"
+  },
+  {
+    "Id": 7,
+    "companyId": 8,
+    "contactPerson": "Jennifer Adams",
+    "value": 38000,
+    "probability": 60,
+    "stage": "demo",
+    "expectedCloseDate": "2024-04-18",
+    "notes": "Consulting firm interested in our solutions. Demo scheduled for this week.",
+    "createdAt": "2024-03-05T14:20:00Z",
+    "updatedAt": "2024-03-19T09:15:00Z"
+  },
+  {
+    "Id": 8,
+    "companyId": 1,
+    "contactPerson": "Mark Stevens",
+    "value": 52000,
+    "probability": 70,
+    "stage": "trial",
+    "expectedCloseDate": "2024-04-12",
+    "notes": "Second deal with TechFlow. Expansion into new department.",
+    "createdAt": "2024-03-12T11:30:00Z",
+    "updatedAt": "2024-03-20T15:45:00Z"
+  },
+  {
+    "Id": 9,
+    "companyId": 2,
+    "contactPerson": "Amanda Foster",
+    "value": 18500,
+    "probability": 30,
+    "stage": "lead",
+    "expectedCloseDate": "2024-05-15",
+    "notes": "New lead from healthcare sector. Initial interest shown.",
+    "createdAt": "2024-03-20T16:00:00Z",
+    "updatedAt": "2024-03-20T16:00:00Z"
+  },
+  {
+    "Id": 10,
+    "companyId": 6,
+    "contactPerson": "Tom Wilson",
+    "value": 25000,
+    "probability": 10,
+    "stage": "closed",
+    "expectedCloseDate": "2024-03-30",
+    "notes": "Deal lost. Customer decided to go with competitor due to pricing.",
+    "createdAt": "2024-02-01T09:00:00Z",
+    "updatedAt": "2024-03-30T10:00:00Z"
+  }
+]
