@@ -3,9 +3,32 @@ import metricsData from "@/services/mockData/metrics.json";
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const metricsService = {
-  async getAll() {
+async getAll() {
     await delay(250);
-    return [...metricsData];
+    // Include lead-related metrics in dashboard
+    const baseMetrics = [...metricsData];
+    
+    // Add lead metrics if leadService is available
+    try {
+      const { leadService } = await import('./leadService.js');
+      const leads = await leadService.getAll();
+      const sourceAnalytics = await leadService.getSourceAnalytics();
+      
+      const leadMetric = {
+        label: "Lead Conversion",
+        value: leads.length ? Math.round((leads.filter(l => l.status === "Converted").length / leads.length) * 100) : 0,
+        unit: "%",
+        trend: "up",
+        trendValue: 12,
+        icon: "UserPlus",
+        description: "Leads converted to deals"
+      };
+      
+      return [...baseMetrics, leadMetric];
+    } catch (error) {
+      // Fallback if leadService not available
+      return baseMetrics;
+    }
   },
 
   async getById(index) {

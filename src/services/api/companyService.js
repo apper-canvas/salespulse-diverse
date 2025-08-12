@@ -60,8 +60,44 @@ export const companyService = {
       throw new Error(`Company with ID ${id} not found`);
     }
     
-    const deletedCompany = companies[index];
+const deletedCompany = companies[index];
     companies.splice(index, 1);
     return { ...deletedCompany };
+  },
+
+  // Lead relationship methods
+  async getByLeadSource(leadSource) {
+    await delay(200);
+    // In a real app, this would filter companies by lead source
+    // For now, return all companies as potential lead sources
+    return [...companies];
+  },
+
+  async createFromLead(leadData) {
+    await delay(300);
+    const companyData = {
+      name: leadData.companyName,
+      industry: leadData.industry,
+      employees: this.getEmployeeCountFromSize(leadData.companySize),
+      website: leadData.website,
+      status: "Prospect",
+      plan: "Free",
+      mrr: 0,
+      leadSource: leadData.source,
+      leadScore: leadData.leadScore
+    };
+    
+    return this.create(companyData);
+  },
+
+  getEmployeeCountFromSize(companySize) {
+    switch (companySize) {
+      case "1-10": return 5;
+      case "11-50": return 25;
+      case "51-200": return 100;
+      case "201-500": return 300;
+      case "500+": return 1000;
+      default: return 10;
+    }
   }
 };

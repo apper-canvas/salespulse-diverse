@@ -1,3 +1,5 @@
+import React from "react";
+import Error from "@/components/ui/Error";
 import activitiesData from "@/services/mockData/activities.json";
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -102,9 +104,46 @@ export const activitiesService = {
     if (index === -1) {
       throw new Error(`Activity with ID ${id} not found`);
     }
+}
     
     const deletedActivity = activitiesData[index];
     activitiesData.splice(index, 1);
     return { ...deletedActivity };
+  },
+
+  // Lead activity tracking methods
+  async createLeadActivity(leadId, activityData) {
+
+  // Lead activity tracking methods
+  async createLeadActivity(leadId, activityData) {
+    await delay(300);
+    const leadActivity = {
+      ...activityData,
+      leadId: parseInt(leadId),
+      type: "lead_activity",
+      title: activityData.title || "Lead Activity",
+      description: activityData.description || `Activity for lead ID ${leadId}`
+    };
+    
+    return this.create(leadActivity);
+  },
+
+  async getByLead(leadId) {
+    await delay(200);
+    return activitiesData.filter(a => a.leadId === parseInt(leadId));
+  },
+
+  async createLeadConversionActivity(leadId, dealId) {
+    await delay(200);
+    const conversionActivity = {
+      title: "Lead Converted to Deal",
+      description: `Lead ID ${leadId} was successfully converted to Deal ID ${dealId}`,
+      type: "conversion",
+      leadId: parseInt(leadId),
+      dealId: parseInt(dealId),
+      isTask: false,
+      completed: true
+    };
+return this.create(conversionActivity);
   }
 };

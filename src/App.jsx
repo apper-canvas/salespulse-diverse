@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Layout from "@/components/organisms/Layout";
 import Dashboard from "@/components/pages/Dashboard";
+import Leads from "@/components/pages/Leads";
 import Contacts from "@/components/pages/Contacts";
 import Companies from "@/components/pages/Companies";
 import Pipeline from "@/components/pages/Pipeline";
@@ -16,9 +17,10 @@ function App() {
 <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/leads" element={<Leads />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/companies" element={<Companies />} />
-<Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/activities" element={<Activities />} />
             <Route path="/reports" element={<ComingSoon section="Reports" />} />
           </Routes>

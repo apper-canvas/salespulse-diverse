@@ -1,4 +1,4 @@
-import dealsData from '@/services/mockData/deals.json';
+import dealsData from "@/services/mockData/deals.json";
 
 let deals = [...dealsData];
 let nextId = Math.max(...deals.map(d => d.Id)) + 1;
@@ -103,10 +103,57 @@ export const dealService = {
       return acc;
     }, {});
 
-    return {
+return {
       total: deals.length,
       totalValue: deals.reduce((sum, deal) => sum + deal.value, 0),
       byStage: stats
+    };
+  },
+
+  // Lead conversion methods
+  async createFromLead(leadData, dealData) {
+    await delay(300);
+    const leadToDeal = {
+      title: dealData.title || `${leadData.companyName} - ${leadData.firstName} ${leadData.lastName}`,
+      companyId: dealData.companyId || null,
+      contactName: `${leadData.firstName} ${leadData.lastName}`,
+      contactEmail: leadData.email,
+      value: dealData.value || 0,
+      stage: "Prospecting",
+      probability: 25,
+      closeDate: dealData.closeDate,
+      assignedTo: leadData.assignedTo,
+      leadSource: leadData.source,
+      leadScore: leadData.leadScore,
+      notes: `Converted from lead ID ${leadData.Id}. Original lead score: ${leadData.leadScore}`,
+      leadId: leadData.Id
+    };
+    
+    return this.create(leadToDeal);
+  },
+
+  async getByLeadSource(leadSource) {
+    await delay(200);
+    return deals.filter(d => d.leadSource === leadSource).map(d => ({ ...d }));
+  },
+
+  async getConversionStats() {
+    await delay(200);
+    const convertedDeals = deals.filter(d => d.leadId);
+    const totalRevenue = convertedDeals.reduce((sum, deal) => sum + deal.value, 0);
+    
+    return {
+      totalConverted: convertedDeals.length,
+      totalRevenue,
+      avgDealSize: convertedDeals.length ? Math.round(totalRevenue / convertedDeals.length) : 0,
+      conversionsBySource: convertedDeals.reduce((acc, deal) => {
+        if (!acc[deal.leadSource]) {
+          acc[deal.leadSource] = { count: 0, revenue: 0 };
+        }
+        acc[deal.leadSource].count++;
+        acc[deal.leadSource].revenue += deal.value;
+        return acc;
+}, {})
     };
   }
 };
