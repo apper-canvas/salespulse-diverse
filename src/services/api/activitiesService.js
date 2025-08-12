@@ -98,21 +98,17 @@ export const activitiesService = {
     });
   },
 
-  async delete(id) {
+async delete(id) {
     await delay(250);
     const index = activitiesData.findIndex(a => a.Id === parseInt(id));
     if (index === -1) {
       throw new Error(`Activity with ID ${id} not found`);
     }
-}
     
     const deletedActivity = activitiesData[index];
     activitiesData.splice(index, 1);
     return { ...deletedActivity };
   },
-
-  // Lead activity tracking methods
-  async createLeadActivity(leadId, activityData) {
 
   // Lead activity tracking methods
   async createLeadActivity(leadId, activityData) {

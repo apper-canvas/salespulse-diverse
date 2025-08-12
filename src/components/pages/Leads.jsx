@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import LeadCard from "@/components/molecules/LeadCard";
-import LeadForm from "@/components/organisms/LeadForm";
-import LeadDetail from "@/components/organisms/LeadDetail";
 import { toast } from "react-toastify";
 import { leadService } from "@/services/api/leadService";
 import ApperIcon from "@/components/ApperIcon";
+import LeadForm from "@/components/organisms/LeadForm";
+import LeadDetail from "@/components/organisms/LeadDetail";
+import LeadCard from "@/components/molecules/LeadCard";
 import SearchBar from "@/components/molecules/SearchBar";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
@@ -242,14 +242,14 @@ const Leads = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Converted</p>
-              <p className="text-2xl font-bold text-accent">{getStatusCount("Converted")}</p>
+<p className="text-2xl font-bold text-accent">{getStatusCount("Converted")}</p>
             </div>
             <div className="h-10 w-10 bg-accent/10 rounded-full flex items-center justify-center">
-<div className="h-10 w-10 bg-accent/10 rounded-full flex items-center justify-center">
               <ApperIcon name="ArrowRight" size={20} className="text-accent" />
             </div>
-          </div>
+</div>
         </Card>
+      </div>
 
       {/* Source Analytics */}
       {Object.keys(sourceAnalytics).length > 0 && (
