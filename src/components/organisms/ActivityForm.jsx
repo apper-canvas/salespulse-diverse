@@ -6,7 +6,7 @@ import ApperIcon from "@/components/ApperIcon";
 import { activitiesService } from "@/services/api/activitiesService";
 import { format } from "date-fns";
 
-const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCancel, isOpen }) => {
+const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCancel, isOpen, preselectedType }) => {
   const [formData, setFormData] = useState({
     type: "call",
     title: "",
@@ -41,7 +41,7 @@ const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCance
       // Reset form for new activity
       const now = new Date().toISOString().slice(0, 16);
       setFormData({
-        type: "call",
+type: preselectedType || "call",
         title: "",
         description: "",
         contactId: "",
@@ -54,7 +54,7 @@ const ActivityForm = ({ activity, contacts = [], companies = [], onSave, onCance
         completed: false
       });
     }
-  }, [activity, isOpen]);
+}, [activity, isOpen, preselectedType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
