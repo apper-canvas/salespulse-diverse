@@ -201,8 +201,8 @@ const handleAddDeal = () => {
                             draggableId={deal.Id.toString()} 
                             index={index}
                           >
-                            {(provided, snapshot) => (
-<Card 
+{(provided, snapshot) => (
+                              <Card 
                                 {...provided.draggableProps}
                                 ref={provided.innerRef}
                                 className={`p-4 cursor-pointer transition-all hover:shadow-md ${
@@ -211,45 +211,46 @@ const handleAddDeal = () => {
                                 onClick={() => handleDealClick(deal)}
                               >
                                 <div {...provided.dragHandleProps}>
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="font-medium text-gray-900 text-sm">
-                                    {getCompanyName(deal.companyId)}
-                                  </h4>
-                                  <ApperIcon 
-                                    name="GripVertical" 
-                                    size={14} 
-                                    className="text-gray-400 flex-shrink-0 ml-2" 
-                                  />
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <div className="text-lg font-semibold text-primary">
-                                    {formatCurrency(deal.value)}
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="font-medium text-gray-900 text-sm">
+                                      {getCompanyName(deal.companyId)}
+                                    </h4>
+                                    <ApperIcon 
+                                      name="GripVertical" 
+                                      size={14} 
+                                      className="text-gray-400 flex-shrink-0 ml-2" 
+                                    />
                                   </div>
                                   
-                                  <div className="flex items-center justify-between">
-                                    <Badge 
-                                      className={`text-xs px-2 py-1 ${getProbabilityColor(deal.probability)}`}
-                                    >
-                                      {deal.probability}%
-                                    </Badge>
-                                    <div className="text-xs text-gray-500">
-                                      {formatDate(deal.expectedCloseDate)}
+                                  <div className="space-y-2">
+                                    <div className="text-lg font-semibold text-primary">
+                                      {formatCurrency(deal.value)}
                                     </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                      <Badge 
+                                        className={`text-xs px-2 py-1 ${getProbabilityColor(deal.probability)}`}
+                                      >
+                                        {deal.probability}%
+                                      </Badge>
+                                      <div className="text-xs text-gray-500">
+                                        {formatDate(deal.expectedCloseDate)}
+                                      </div>
+                                    </div>
+                                    
+                                    {deal.contactPerson && (
+                                      <div className="text-xs text-gray-600 flex items-center">
+                                        <ApperIcon name="User" size={12} className="mr-1" />
+                                        {deal.contactPerson}
+                                      </div>
+                                    )}
+                                    
+                                    {deal.notes && (
+                                      <div className="text-xs text-gray-500 line-clamp-2">
+                                        {deal.notes}
+                                      </div>
+                                    )}
                                   </div>
-                                  
-                                  {deal.contactPerson && (
-                                    <div className="text-xs text-gray-600 flex items-center">
-                                      <ApperIcon name="User" size={12} className="mr-1" />
-                                      {deal.contactPerson}
-                                    </div>
-                                  )}
-                                  
-                                  {deal.notes && (
-                                    <div className="text-xs text-gray-500 line-clamp-2">
-                                      {deal.notes}
-                                    </div>
-                                  )}
                                 </div>
                               </Card>
                             )}
