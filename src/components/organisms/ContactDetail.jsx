@@ -11,9 +11,14 @@ const ContactDetail = ({ contact, onEdit, onClose, isOpen }) => {
   const [companyContacts, setCompanyContacts] = useState([]);
   const [loadingCompany, setLoadingCompany] = useState(false);
 
+  // Early return if contact is null/undefined
+  if (!contact) {
+    return null;
+  }
+
 useEffect(() => {
     const loadCompanyData = async () => {
-      if (contact.companyId) {
+      if (contact?.companyId) {
         setLoadingCompany(true);
         try {
           const companyData = await companyService.getById(contact.companyId);
@@ -63,16 +68,16 @@ useEffect(() => {
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
+<div className="flex items-center space-x-3 mb-2">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {contact.firstName} {contact.lastName}
+                  {contact?.firstName || 'Unknown'} {contact?.lastName || 'Contact'}
                 </h2>
-                <Badge variant={getBadgeVariant(contact.status)}>
-                  {contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
+                <Badge variant={getBadgeVariant(contact?.status || 'active')}>
+                  {(contact?.status || 'active').charAt(0).toUpperCase() + (contact?.status || 'active').slice(1)}
                 </Badge>
               </div>
 <p className="text-lg text-gray-600">
-                {contact.role} {company ? `at ${company.name}` : contact.company ? `at ${contact.company}` : ''}
+                {contact?.role || 'No role specified'} {company ? `at ${company.name}` : contact?.company ? `at ${contact.company}` : ''}
               </p>
             </div>
             <div className="flex items-center space-x-2">
