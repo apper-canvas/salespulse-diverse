@@ -1,4 +1,6 @@
 import leadsData from "@/services/mockData/leads.json";
+import { notificationService } from "@/services/api/notificationService";
+import { toast } from "react-toastify";
 
 // In-memory storage for runtime modifications
 let leads = [...leadsData];
@@ -43,7 +45,7 @@ export const leadService = {
     return leads.filter(l => l.assignedToId === parseInt(assigneeId)).map(l => ({ ...l }));
   },
 
-  async create(leadData) {
+async create(leadData) {
     await delay(400);
     const newId = Math.max(...leads.map(l => l.Id)) + 1;
     
@@ -61,15 +63,32 @@ export const leadService = {
     };
     
     leads.unshift(newLead);
+
+    // Create notification for new lead
+    try {
+      if (newLead.assignedToId) {
+        await notificationService.createLeadAssignedNotification(
+          newLead.Id,
+          newLead.assignedTo,
+          newLead.assignedToId
+        );
+        toast.success("New lead created and notification sent");
+      }
+    } catch (error) {
+      console.error("Error creating lead notification:", error);
+    }
+
     return { ...newLead };
   },
 
-  async update(id, leadData) {
+async update(id, leadData) {
     await delay(400);
     const index = leads.findIndex(l => l.Id === parseInt(id));
     if (index === -1) {
       throw new Error(`Lead with ID ${id} not found`);
     }
+    
+    const originalLead = { ...leads[index] };
     
     // Recalculate score if qualification data changed
     let updatedData = { ...leadData };
@@ -87,10 +106,47 @@ export const leadService = {
     };
     
     leads[index] = updatedLead;
+
+    // Create notifications for changes
+    try {
+      // Status change notification
+      if (originalLead.status !== updatedLead.status) {
+        await notificationService.createStatusChangedNotification(
+          updatedLead.Id,
+          originalLead.status,
+          updatedLead.status,
+          updatedLead.assignedToId || 1
+        );
+        toast.success(`Lead status updated to ${updatedLead.status}`);
+      }
+
+      // Lead marked as lost notification
+      if (updatedLead.status === "Lost" || updatedLead.status === "Disqualified") {
+        await notificationService.createLeadMarkedLostNotification(
+          updatedLead.Id,
+          updatedData.lostReason || "No reason provided",
+          updatedLead.assignedToId || 1
+        );
+        toast.info("Lead marked as lost - notification sent");
+      }
+
+      // Tagged notification
+      if (updatedData.tags && updatedData.tags !== originalLead.tags) {
+        await notificationService.createLeadTaggedNotification(
+          updatedLead.Id,
+          updatedData.tags,
+          updatedLead.assignedToId || 1
+        );
+        toast.success("Lead tags updated");
+      }
+    } catch (error) {
+      console.error("Error creating update notifications:", error);
+    }
+
     return { ...updatedLead };
   },
 
-  async delete(id) {
+async delete(id) {
     await delay(300);
     const index = leads.findIndex(l => l.Id === parseInt(id));
     if (index === -1) {
@@ -99,6 +155,19 @@ export const leadService = {
     
     const deletedLead = leads[index];
     leads.splice(index, 1);
+
+    // Create deletion notification
+    try {
+      await notificationService.createLeadMarkedLostNotification(
+        deletedLead.Id,
+        "Lead deleted",
+        deletedLead.assignedToId || 1
+      );
+      toast.success("Lead deleted and notification sent");
+    } catch (error) {
+      console.error("Error creating deletion notification:", error);
+    }
+
     return { ...deletedLead };
   },
 
@@ -188,21 +257,35 @@ export const leadService = {
   },
 
   // Lead assignment methods
-  async assignLead(leadId, assigneeId) {
+async assignLead(leadId, assigneeId) {
     await delay(200);
     const assignee = salesTeam.find(member => member.Id === parseInt(assigneeId));
     if (!assignee) {
       throw new Error("Invalid assignee ID");
     }
 
-    return this.update(leadId, {
+    const updatedLead = await this.update(leadId, {
       assignedTo: assignee.name,
       assignedToId: assignee.Id,
       territory: assignee.territory
     });
+
+    // Create assignment notification
+    try {
+      await notificationService.createLeadAssignedNotification(
+        leadId,
+        assignee.name,
+        assignee.Id
+      );
+      toast.success(`Lead assigned to ${assignee.name}`);
+    } catch (error) {
+      console.error("Error creating assignment notification:", error);
+    }
+
+    return updatedLead;
   },
 
-  async assignByTerritory(leadId, territory) {
+async assignByTerritory(leadId, territory) {
     await delay(200);
     const territoryMembers = salesTeam.filter(member => member.territory === territory);
     if (territoryMembers.length === 0) {
@@ -220,14 +303,28 @@ export const leadService = {
       assignmentCounts[member.Id] < assignmentCounts[min.Id] ? member : min
     );
 
-    return this.update(leadId, {
+    const updatedLead = await this.update(leadId, {
       assignedTo: assignee.name,
       assignedToId: assignee.Id,
       territory: assignee.territory
     });
+
+    // Create territory assignment notification
+    try {
+      await notificationService.createLeadAssignedNotification(
+        leadId,
+        assignee.name,
+        assignee.Id
+      );
+      toast.success(`Lead assigned to ${assignee.name} in ${territory} territory`);
+    } catch (error) {
+      console.error("Error creating territory assignment notification:", error);
+    }
+
+    return updatedLead;
   },
 
-  async autoAssignByRoundRobin(leadId) {
+async autoAssignByRoundRobin(leadId) {
     await delay(200);
     const assignmentCounts = salesTeam.reduce((acc, member) => {
       acc[member.Id] = leads.filter(l => l.assignedToId === member.Id).length;
@@ -238,11 +335,25 @@ export const leadService = {
       assignmentCounts[member.Id] < assignmentCounts[min.Id] ? member : min
     );
 
-    return this.update(leadId, {
+    const updatedLead = await this.update(leadId, {
       assignedTo: assignee.name,
       assignedToId: assignee.Id,
       territory: assignee.territory
     });
+
+    // Create auto-assignment notification
+    try {
+      await notificationService.createLeadAssignedNotification(
+        leadId,
+        assignee.name,
+        assignee.Id
+      );
+      toast.success(`Lead auto-assigned to ${assignee.name}`);
+    } catch (error) {
+      console.error("Error creating auto-assignment notification:", error);
+    }
+
+    return updatedLead;
   },
 
   // Source analytics
@@ -282,7 +393,7 @@ export const leadService = {
   },
 
   // Convert lead to deal
-  async convertToDeal(leadId, dealData) {
+async convertToDeal(leadId, dealData) {
     await delay(300);
     const lead = await this.getById(leadId);
     
@@ -300,8 +411,21 @@ export const leadService = {
       notes: `Converted from lead ID ${leadId}. Original lead score: ${lead.leadScore}`
     };
 
-    // Update lead status to converted
+    // Update lead status to converted (this will trigger status change notification)
     await this.update(leadId, { status: "Converted" });
+    
+    // Additional conversion success notification
+    try {
+      await notificationService.createStatusChangedNotification(
+        leadId,
+        lead.status,
+        "Converted to Deal",
+        lead.assignedToId || 1
+      );
+      toast.success("Lead successfully converted to deal");
+    } catch (error) {
+      console.error("Error creating conversion notification:", error);
+    }
     
     return convertedDeal;
   }

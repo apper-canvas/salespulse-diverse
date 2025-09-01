@@ -1,4 +1,6 @@
 import React from "react";
+import { notificationService } from "@/services/api/notificationService";
+import { toast } from "react-toastify";
 import Error from "@/components/ui/Error";
 import activitiesData from "@/services/mockData/activities.json";
 
@@ -110,7 +112,7 @@ async delete(id) {
     return { ...deletedActivity };
   },
 
-  // Lead activity tracking methods
+// Lead activity tracking methods
   async createLeadActivity(leadId, activityData) {
     await delay(300);
     const leadActivity = {
@@ -121,7 +123,23 @@ async delete(id) {
       description: activityData.description || `Activity for lead ID ${leadId}`
     };
     
-    return this.create(leadActivity);
+    const createdActivity = await this.create(leadActivity);
+
+    // Create notification for note/comment added
+    try {
+      if (activityData.type === "note" || activityData.description) {
+        await notificationService.createNoteAddedNotification(
+          leadId,
+          activityData.title || "New note",
+          activityData.assignedToId || 1
+        );
+        toast.success("Note added and notification sent");
+      }
+    } catch (error) {
+      console.error("Error creating note notification:", error);
+    }
+
+    return createdActivity;
   },
 
   async getByLead(leadId) {

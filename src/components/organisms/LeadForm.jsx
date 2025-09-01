@@ -4,6 +4,7 @@ import Input from "@/components/atoms/Input";
 import Card from "@/components/atoms/Card";
 import ApperIcon from "@/components/ApperIcon";
 import { leadService } from "@/services/api/leadService";
+import { notificationService } from "@/services/api/notificationService";
 import { toast } from "react-toastify";
 
 const LeadForm = ({ lead, onSave, onCancel, onClose }) => {
@@ -94,7 +95,7 @@ const LeadForm = ({ lead, onSave, onCancel, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+e.preventDefault();
     setLoading(true);
 
     try {
@@ -106,11 +107,43 @@ const LeadForm = ({ lead, onSave, onCancel, onClose }) => {
       if (lead) {
         const updatedLead = await leadService.update(lead.Id, submitData);
         onSave(updatedLead);
-        toast.success("Lead updated successfully");
+
+        // Create follow-up reminder notification if date is set
+        if (submitData.nextFollowUp) {
+          try {
+            await notificationService.createFollowupReminderNotification(
+              lead.Id,
+              submitData.nextFollowUp,
+              updatedLead.assignedToId || 1
+            );
+            toast.success("Lead updated with follow-up reminder set");
+          } catch (error) {
+            console.error("Error creating follow-up notification:", error);
+            toast.success("Lead updated successfully");
+          }
+        } else {
+          toast.success("Lead updated successfully");
+        }
       } else {
         const newLead = await leadService.create(submitData);
         onSave(newLead);
-        toast.success("Lead created successfully");
+
+        // Create follow-up reminder notification for new lead if date is set
+        if (submitData.nextFollowUp) {
+          try {
+            await notificationService.createFollowupReminderNotification(
+              newLead.Id,
+              submitData.nextFollowUp,
+              newLead.assignedToId || 1
+            );
+            toast.success("Lead created with follow-up reminder set");
+          } catch (error) {
+            console.error("Error creating follow-up notification:", error);
+            toast.success("Lead created successfully");
+          }
+        } else {
+          toast.success("Lead created successfully");
+        }
       }
     } catch (error) {
       toast.error("Error saving lead: " + error.message);
