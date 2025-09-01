@@ -4,6 +4,7 @@ import DealCard from "@/components/molecules/DealCard";
 import DealDetail from "@/components/organisms/DealDetail";
 import { toast } from "react-toastify";
 import { dealService } from "@/services/api/dealService";
+import { createStageChangeNotification } from "@/services/api/notificationService";
 import { companyService } from "@/services/api/companyService";
 import ApperIcon from "@/components/ApperIcon";
 import DealForm from "@/components/organisms/DealForm";
@@ -50,11 +51,16 @@ const [deals, setDeals] = useState([]);
     }
   };
 
-  const handleDragEnd = async (result) => {
+const handleDragEnd = async (result) => {
     if (!result.destination) return;
 
     const dealId = parseInt(result.draggableId);
     const newStage = result.destination.droppableId;
+    const oldStage = result.source.droppableId;
+
+    // Find the deal being moved to get its name
+    const deal = deals.find(d => d.Id === dealId);
+    const dealName = deal?.name || `Deal #${dealId}`;
 
     try {
       await dealService.updateStage(dealId, newStage);
@@ -64,6 +70,14 @@ const [deals, setDeals] = useState([]);
           deal.Id === dealId ? { ...deal, stage: newStage } : deal
         )
       );
+
+      // Create stage change notification
+      try {
+        await createStageChangeNotification(dealName, oldStage, newStage);
+      } catch (notificationError) {
+        console.error('Failed to create stage change notification:', notificationError);
+        // Don't show error to user as the main operation succeeded
+      }
 
       toast.success('Deal moved successfully');
     } catch (err) {

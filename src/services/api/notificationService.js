@@ -254,3 +254,104 @@ export const notificationService = {
     });
   }
 };
+
+// Pipeline-specific notification creation methods
+export const createStageChangeNotification = async (dealName, oldStage, newStage, userName = "Current User") => {
+  try {
+    await delay(200);
+    
+    const stageLabels = {
+      'lead': 'Lead',
+      'qualified': 'Qualified',
+      'proposal': 'Proposal',
+      'negotiation': 'Negotiation',
+      'closed-won': 'Closed Won',
+      'closed-lost': 'Closed Lost'
+    };
+
+    const notification = {
+      Id: Date.now(),
+      type_c: 'Deal Stage Changed',
+      title_c: 'Deal Stage Updated',
+      message_c: `Deal "${dealName}" moved from ${stageLabels[oldStage] || oldStage} to ${stageLabels[newStage] || newStage}`,
+      read_status_c: false,
+      created_at_c: new Date().toISOString(),
+      user_c: userName,
+      priority_c: 'medium',
+      category_c: 'pipeline',
+      deal_name_c: dealName,
+      old_stage_c: oldStage,
+      new_stage_c: newStage
+    };
+// Add to notifications (in real implementation, this would be a database operation)
+    const notifications = await notificationService.getAll();
+    notifications.unshift(notification);
+    
+    return notification;
+  } catch (error) {
+    console.error('Error creating stage change notification:', error);
+    throw new Error('Failed to create stage change notification');
+  }
+};
+
+export const createCloseDateNotification = async (dealName, closeDate, daysUntilClose, userName = "Current User") => {
+  try {
+    await delay(200);
+    
+    const urgencyLevel = daysUntilClose <= 3 ? 'high' : daysUntilClose <= 7 ? 'medium' : 'low';
+    const urgencyText = daysUntilClose <= 3 ? 'urgent' : daysUntilClose <= 7 ? 'soon' : 'approaching';
+
+    const notification = {
+      Id: Date.now(),
+      type_c: 'Deal Approaching Close Date',
+      title_c: 'Deal Close Date Alert',
+      message_c: `Deal "${dealName}" is ${urgencyText} - closes in ${daysUntilClose} day${daysUntilClose !== 1 ? 's' : ''}`,
+      read_status_c: false,
+      created_at_c: new Date().toISOString(),
+      user_c: userName,
+      priority_c: urgencyLevel,
+      category_c: 'pipeline',
+      deal_name_c: dealName,
+      close_date_c: closeDate,
+      days_until_close_c: daysUntilClose
+};
+
+    const notifications = await notificationService.getAll();
+    notifications.unshift(notification);
+    
+    return notification;
+  } catch (error) {
+    console.error('Error creating close date notification:', error);
+    throw new Error('Failed to create close date notification');
+  }
+};
+
+export const createReassignmentNotification = async (dealName, oldUser, newUser, reassignedBy = "Current User") => {
+  try {
+    await delay(200);
+    
+    const notification = {
+      Id: Date.now(),
+      type_c: 'Deal Reassigned',
+      title_c: 'Deal Reassignment',
+      message_c: `Deal "${dealName}" reassigned from ${oldUser} to ${newUser}`,
+      read_status_c: false,
+      created_at_c: new Date().toISOString(),
+      user_c: reassignedBy,
+      priority_c: 'medium',
+      category_c: 'pipeline',
+      deal_name_c: dealName,
+      old_user_c: oldUser,
+      new_user_c: newUser,
+      reassigned_by_c: reassignedBy
+};
+
+    const notifications = await notificationService.getAll();
+    notifications.unshift(notification);
+    
+    return notification;
+  } catch (error) {
+    console.error('Error creating reassignment notification:', error);
+    throw new Error('Failed to create reassignment notification');
+  }
+};

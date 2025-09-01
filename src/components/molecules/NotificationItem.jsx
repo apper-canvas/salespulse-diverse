@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
 
 const NotificationItem = ({ notification, onMarkAsRead }) => {
-  const getNotificationIcon = (type) => {
+const getNotificationIcon = (type) => {
     switch (type) {
       case 'New Lead Assigned':
         return 'UserPlus';
@@ -18,12 +18,19 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         return 'XCircle';
       case 'Lead Tagged':
         return 'Tag';
+      // Pipeline notification types
+      case 'Deal Stage Changed':
+        return 'ArrowUpCircle';
+      case 'Deal Approaching Close Date':
+        return 'Calendar';
+      case 'Deal Reassigned':
+        return 'UserPlus';
       default:
         return 'Bell';
     }
   };
 
-  const getNotificationColor = (type) => {
+const getNotificationColor = (type) => {
     switch (type) {
       case 'New Lead Assigned':
         return 'text-primary';
@@ -37,6 +44,13 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         return 'text-error';
       case 'Lead Tagged':
         return 'text-success';
+      // Pipeline notification colors
+      case 'Deal Stage Changed':
+        return 'text-info';
+      case 'Deal Approaching Close Date':
+        return 'text-warning';
+      case 'Deal Reassigned':
+        return 'text-primary';
       default:
         return 'text-gray-500';
     }
