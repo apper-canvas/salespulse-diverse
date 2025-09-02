@@ -3,8 +3,10 @@ import { format } from "date-fns";
 import { companyService } from "@/services/api/companyService";
 import { contactService } from "@/services/api/contactService";
 import { commentService } from "@/services/api/commentService";
+import { dealService } from "@/services/api/dealService";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
+import DealForm from "@/components/organisms/DealForm";
 import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
 import Contacts from "@/components/pages/Contacts";
@@ -14,8 +16,9 @@ import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 
 const DealDetail = ({ deal, onClose, onEdit, ...props }) => {
-const [company, setCompany] = useState(null);
+  const [company, setCompany] = useState(null);
   const [contacts, setContacts] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,9 +27,43 @@ const [company, setCompany] = useState(null);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
+  const [editingDeal, setEditingDeal] = useState(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+
+  const loadDealData = async () => {
+    if (!deal) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load company data, all companies, and contacts
+      const [companyData, allCompanies, allContacts] = await Promise.all([
+        companyService.getById(deal.companyId),
+        companyService.getAll(),
+        contactService.getAll()
+      ]);
+      
+      setCompany(companyData);
+      setCompanies(allCompanies);
+      
+      // Filter contacts by company
+      const companyContacts = allContacts.filter(contact => 
+        contact.companyId === deal.companyId
+      );
+      setContacts(companyContacts);
+
+    } catch (err) {
+      console.error('Error loading deal data:', err);
+      setError(err.message);
+      toast.error('Failed to load deal details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-loadDealData();
+    loadDealData();
     loadComments();
   }, [deal]);
 
@@ -124,31 +161,35 @@ const formatCommentDate = (dateString) => {
     return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
   };
 
-  const loadDealData = async () => {
-    if (!deal) return;
+  const handleEditDeal = (deal) => {
+    setEditingDeal(deal);
+    setShowEditForm(true);
+  };
 
+  const handleSaveEdit = async (dealData, dealId) => {
     try {
-      setLoading(true);
-      setError(null);
+      const updatedDeal = await dealService.update(dealId, dealData);
       
-      // Load company data
-      const companyData = await companyService.getById(deal.companyId);
-      setCompany(companyData);
-
-      // Load all contacts and filter by company
-      const allContacts = await contactService.getAll();
-      const companyContacts = allContacts.filter(contact => 
-        contact.companyId === deal.companyId
-      );
-      setContacts(companyContacts);
-
+      // Update local state
+      if (onEdit) {
+        onEdit(updatedDeal); // Notify parent component
+      }
+      
+      setShowEditForm(false);
+      setEditingDeal(null);
+      toast.success('Deal updated successfully');
+      
+      // Reload deal data to reflect changes
+      await loadDealData();
     } catch (err) {
-      console.error('Error loading deal data:', err);
-      setError(err.message);
-      toast.error('Failed to load deal details');
-    } finally {
-      setLoading(false);
+      console.error('Failed to update deal:', err);
+      toast.error('Failed to update deal');
     }
+  };
+
+  const handleCloseEditForm = () => {
+    setShowEditForm(false);
+    setEditingDeal(null);
   };
 
   const formatCurrency = (amount) => {
@@ -224,17 +265,15 @@ const formatCommentDate = (dateString) => {
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">Deal Details</h2>
           <div className="flex items-center space-x-2">
-            {onEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(deal)}
-                className="flex items-center space-x-1"
-              >
-                <ApperIcon name="Edit2" size={16} />
-                <span>Edit</span>
-              </Button>
-            )}
+<Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEditDeal(deal)}
+              className="flex items-center space-x-1"
+            >
+              <ApperIcon name="Edit2" size={16} />
+              <span>Edit</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -544,11 +583,19 @@ const formatCommentDate = (dateString) => {
                 </div>
               )}
             </div>
-          </div>
+</div>
         )}
       </Card>
+      {/* Edit Deal Form */}
+      {showEditForm && editingDeal && (
+        <DealForm
+          companies={companies}
+          deal={editingDeal}
+          onSave={handleSaveEdit}
+          onClose={handleCloseEditForm}
+        />
+      )}
     </div>
-  );
 };
 
 export default DealDetail;
