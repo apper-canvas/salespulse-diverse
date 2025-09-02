@@ -4,15 +4,15 @@ import Input from '@/components/atoms/Input';
 import Card from '@/components/atoms/Card';
 import ApperIcon from '@/components/ApperIcon';
 
-const DealForm = ({ companies = [], onSave, onClose }) => {
+const DealForm = ({ companies = [], deal = null, onSave, onClose }) => {
   const [formData, setFormData] = useState({
-    companyId: '',
-    contactPerson: '',
-    value: '',
-    probability: 50,
-    expectedCloseDate: '',
-    notes: '',
-    stage: 'lead'
+    companyId: deal?.companyId || '',
+    contactPerson: deal?.contactPerson || '',
+    value: deal?.value || '',
+    probability: deal?.probability || 50,
+    expectedCloseDate: deal?.expectedCloseDate || '',
+    notes: deal?.notes || '',
+    stage: deal?.stage || 'lead'
   });
 
   const [errors, setErrors] = useState({});
@@ -45,7 +45,7 @@ const DealForm = ({ companies = [], onSave, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -59,7 +59,7 @@ const DealForm = ({ companies = [], onSave, onClose }) => {
         probability: parseInt(formData.probability)
       };
       
-      await onSave(dealData);
+      await onSave(dealData, deal?.Id);
     } finally {
       setSaving(false);
     }
@@ -87,7 +87,9 @@ const DealForm = ({ companies = [], onSave, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Add New Deal</h2>
+<h2 className="text-xl font-semibold text-gray-900">
+            {deal ? 'Edit Deal' : 'Add New Deal'}
+          </h2>
           <Button
             variant="ghost"
             size="sm"
@@ -222,7 +224,12 @@ const DealForm = ({ companies = [], onSave, onClose }) => {
               className="flex items-center space-x-2"
             >
               {saving && <ApperIcon name="Loader2" size={16} className="animate-spin" />}
-              <span>{saving ? 'Creating...' : 'Create Deal'}</span>
+<span>
+                {saving 
+                  ? (deal ? 'Updating...' : 'Creating...')
+                  : (deal ? 'Update Deal' : 'Create Deal')
+                }
+              </span>
             </Button>
           </div>
         </form>

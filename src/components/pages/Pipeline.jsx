@@ -18,6 +18,7 @@ const Pipeline = () => {
 const [deals, setDeals] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingDeal, setEditingDeal] = useState(null);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState(null);
@@ -88,19 +89,31 @@ const handleAddDeal = () => {
     setShowForm(true);
   };
 
-  const handleSaveDeal = async (dealData) => {
+const handleSaveDeal = async (dealData, dealId = null) => {
     try {
-      const savedDeal = await dealService.create(dealData);
-      setDeals(prevDeals => [...prevDeals, savedDeal]);
+      if (dealId) {
+        // Edit existing deal
+        const updatedDeal = await dealService.update(dealId, dealData);
+        setDeals(prevDeals => 
+          prevDeals.map(d => d.Id === dealId ? updatedDeal : d)
+        );
+        toast.success('Deal updated successfully');
+      } else {
+        // Create new deal
+        const savedDeal = await dealService.create(dealData);
+        setDeals(prevDeals => [...prevDeals, savedDeal]);
+        toast.success('Deal created successfully');
+      }
       setShowForm(false);
-      toast.success('Deal created successfully');
+      setEditingDeal(null);
     } catch (err) {
-      toast.error('Failed to create deal');
+      toast.error(dealId ? 'Failed to update deal' : 'Failed to create deal');
     }
   };
 
   const handleCloseForm = () => {
-    setShowForm(false);
+setShowForm(false);
+    setEditingDeal(null);
   };
 
   const handleDealClick = (deal) => {
@@ -113,11 +126,11 @@ const handleAddDeal = () => {
     setShowDealDetail(false);
   };
 
-  const handleEditDeal = (deal) => {
+const handleEditDeal = (deal) => {
     // Close detail modal and open edit form
     setShowDealDetail(false);
-    // Future: implement edit functionality
-    toast.info('Edit functionality coming soon');
+    setEditingDeal(deal);
+    setShowForm(true);
   };
 
   const getDealsByStage = (stageId) => {
@@ -284,6 +297,7 @@ const handleAddDeal = () => {
 {showForm && (
         <DealForm
           companies={companies}
+          deal={editingDeal}
           onSave={handleSaveDeal}
           onClose={handleCloseForm}
         />
