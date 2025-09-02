@@ -581,20 +581,21 @@ const formatCommentDate = (dateString) => {
                     </Card>
                   ))}
                 </div>
-              )}
+)}
             </div>
-</div>
+          </div>
+        )}
+        
+        {/* Edit Deal Form */}
+        {showEditForm && editingDeal && (
+          <DealForm
+            companies={companies}
+            deal={editingDeal}
+            onSave={handleSaveEdit}
+            onClose={handleCloseEditForm}
+          />
         )}
       </Card>
-      {/* Edit Deal Form */}
-      {showEditForm && editingDeal && (
-        <DealForm
-          companies={companies}
-          deal={editingDeal}
-          onSave={handleSaveEdit}
-          onClose={handleCloseEditForm}
-        />
-      )}
     </div>
 };
 
