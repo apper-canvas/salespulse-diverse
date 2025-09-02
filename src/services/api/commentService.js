@@ -49,6 +49,104 @@ const commentService = {
       toast.error("Failed to load comments");
       return [];
     }
+},
+
+  // Get all comments for a specific deal
+  async getByDealId(dealId) {
+    await delay(300);
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "comment_text_c"}},
+          {"field": {"Name": "deal_id_c"}},
+          {"field": {"Name": "user_id_c"}},
+          {"field": {"Name": "CreatedOn"}},
+          {"field": {"Name": "CreatedBy"}},
+          {"field": {"Name": "ModifiedOn"}}
+        ],
+        where: [
+          {
+            "FieldName": "deal_id_c",
+            "Operator": "EqualTo",
+            "Values": [parseInt(dealId)],
+            "Include": true
+          }
+        ],
+        orderBy: [{"fieldName": "CreatedOn", "sorttype": "DESC"}]
+      };
+
+      const response = await apperClient.fetchRecords("comment_c", params);
+      
+      if (!response.success) {
+        console.error("Error fetching deal comments:", response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching deal comments:", error?.response?.data?.message || error);
+      toast.error("Failed to load comments");
+      return [];
+    }
+  },
+
+  // Create comment for a deal
+  async createForDeal(commentData) {
+    await delay(300);
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        records: [{
+          comment_text_c: commentData.comment_text_c,
+          deal_id_c: parseInt(commentData.deal_id_c),
+          user_id_c: commentData.user_id_c || 1 // Default to user 1 if not provided
+        }]
+      };
+
+      const response = await apperClient.createRecord("comment_c", params);
+
+      if (!response.success) {
+        console.error("Error creating deal comment:", response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to create deal comment:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+          return null;
+        }
+
+        if (successful.length > 0) {
+          return successful[0].data;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error creating deal comment:", error?.response?.data?.message || error);
+      toast.error("Failed to create comment");
+      return null;
+    }
   },
 
   // Create a new comment
